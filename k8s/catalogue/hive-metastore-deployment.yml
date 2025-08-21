@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hive-metastore
+  namespace: catalogue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hive-metastore
+  template:
+    metadata:
+      labels:
+        app: hive-metastore
+    spec:
+      containers:
+      - name: hive-metastore
+        image: apache/hive:4.0.0
+        command: ["bin/hive"]
+        args: ["--service", "metastore"]
+        ports:
+        - containerPort: 9083
+        env:
+        - name: METASTORE_DB_HOST
+          value: "postgres.metastore.svc.cluster.local"
+        - name: METASTORE_DB_NAME
+          value: "metastore"
+        - name: METASTORE_DB_USER
+          value: "hive"
+        - name: METASTORE_DB_PASSWORD
+          value: "hivepass"

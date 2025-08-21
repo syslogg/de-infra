@@ -12,7 +12,7 @@ services:
       MINIO_ROOT_USER: admin
       MINIO_ROOT_PASSWORD: admin123
     volumes:
-      - minio_data:/data
+      - .volumes/minio_data:/data
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -31,7 +31,7 @@ services:
       POSTGRES_USER: hive
       POSTGRES_PASSWORD: hive123
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - .volumes/postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
@@ -118,7 +118,17 @@ services:
 
 volumes:
   minio_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/.volumes/minio_data
+      o: bind
   postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/.volumes/postgres_data
+      o: bind
 
 networks:
   data-lake:

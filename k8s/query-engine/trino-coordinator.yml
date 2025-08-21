@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trino-coordinator
+  namespace: query-engine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trino-coordinator
+  template:
+    metadata:
+      labels:
+        app: trino-coordinator
+    spec:
+      containers:
+      - name: trino-coordinator
+        image: trinodb/trino:latest
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /etc/trino
+          name: trino-config
+      volumes:
+      - name: trino-config
+        configMap:
+          name: trino-coordinator-config
