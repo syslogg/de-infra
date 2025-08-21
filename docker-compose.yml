@@ -90,7 +90,7 @@ services:
 
   # Trino Coordinator
   trino:
-    image: trinodb/trino:latest
+    image: trinodb/trino:475
     container_name: trino-coordinator
     depends_on:
       hive-metastore:
@@ -100,11 +100,12 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./config/trino:/etc/trino:ro
+      # - ./config/trino:/etc/trino:ro
+      - ./config/trino:/etc/trino
+      - ./config/trino/catalog:/etc/trino/catalog
     environment:
-      - JAVA_HEAP_SIZE=2G
-      # Configurações específicas para WSL2
-      - JAVA_OPTS=-Djava.net.preferIPv4Stack=true -Djava.security.egd=file:/dev/./urandom
+    - JAVA_HEAP_SIZE=2G
+    - JAVA_OPTS=-Djava.net.preferIPv4Stack=true -Djava.security.egd=file:/dev/./urandom -XX:+UseG1GC
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/v1/info || exit 1"]
       interval: 30s
