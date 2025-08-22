@@ -22,9 +22,9 @@ spec:
             - |
               echo 'Aguardando PostgreSQL...'
               sleep 15
-              if ! /opt/hive/bin/schematool -dbType postgres -info > /dev/null 2>&1; then
+              if ! /opt/hive/bin/schematool -dbType postgres -userName $(pg_username) -passWord $(pg_password) -info > /dev/null 2>&1; then
                 echo 'Inicializando schema do Hive Metastore...'
-                /opt/hive/bin/schematool -initSchema -dbType postgres --verbose
+                /opt/hive/bin/schematool -initSchema -dbType postgres -userName $(pg_username) -passWord $(pg_password) --verbose
               else
                 echo 'Schema do Hive Metastore já existe'
               fi
@@ -33,31 +33,20 @@ spec:
         ports:
         - containerPort: 9083
         env:
-        - name: MINIO_ADMIN_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: hive-credentials
-              key: minio_admin_access_key
+        - name: SERVICE_OPTS
+          value: >-
+            -Djavax.jdo.option.ConnectionUserName=admin
+            -Djavax.jdo.option.ConnectionPassword=admin
 
-        - name: MINIO_ADMIN_SECRET_KEY
-          valueFrom:
-            secretKeyRef:
-              name: hive-credentials
-              key: minio_admin_secret_key
-
-
-        - name: METASTORE_DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: hive-credentials
-              key: pg_username
+        - name: HADOOP_OPTS
+          value: >-
+            -Dfs.s3a.access.key=$(minio_admin_access_key)
+            -Dfs.s3a.secret.key=$(minio_admin_secret_key)
+        envFrom:
+        - secretRef:
+            name: hive-credentials
 
 
-        - name: METASTORE_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: hive-credentials
-              key: pg_password
         volumeMounts:
         - name: hive-config
           mountPath: /opt/hive/conf
