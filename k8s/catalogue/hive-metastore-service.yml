@@ -9,3 +9,4 @@ spec:
     targetPort: 9083
   selector:
     app: hive-metastore
+  type: ClusterIP

@@ -15,17 +15,54 @@ spec:
     spec:
       containers:
       - name: hive-metastore
-        image: apache/hive:4.0.0
-        command: ["bin/hive"]
-        args: ["--service", "metastore"]
+        image: hive-de-infra:1
+        command:
+            - "bash"
+            - "-c"
+            - |
+              echo 'Aguardando PostgreSQL...'
+              sleep 15
+              if ! /opt/hive/bin/schematool -dbType postgres -info > /dev/null 2>&1; then
+                echo 'Inicializando schema do Hive Metastore...'
+                /opt/hive/bin/schematool -initSchema -dbType postgres --verbose
+              else
+                echo 'Schema do Hive Metastore já existe'
+              fi
+              echo 'Iniciando Hive Metastore...'
+              /opt/hive/bin/hive --service metastore
         ports:
         - containerPort: 9083
         env:
-        - name: METASTORE_DB_HOST
-          value: "postgres.metastore.svc.cluster.local"
-        - name: METASTORE_DB_NAME
-          value: "metastore"
+        - name: MINIO_ADMIN_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hive-credentials
+              key: minio_admin_access_key
+
+        - name: MINIO_ADMIN_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hive-credentials
+              key: minio_admin_secret_key
+
+
         - name: METASTORE_DB_USER
-          value: "hive"
+          valueFrom:
+            secretKeyRef:
+              name: hive-credentials
+              key: pg_username
+
+
         - name: METASTORE_DB_PASSWORD
-          value: "hivepass"
+          valueFrom:
+            secretKeyRef:
+              name: hive-credentials
+              key: pg_password
+        volumeMounts:
+        - name: hive-config
+          mountPath: /opt/hive/conf
+      volumes:
+      - name: hive-config
+        configMap:
+          name: hive-config
+

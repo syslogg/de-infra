@@ -17,7 +17,7 @@ spec:
       containers:
       - name: minio
         image: minio/minio:latest
-        args: ["server", "/data"]
+        args: ["server", "/data", "--console-address", ":9090"]
         ports:
         - containerPort: 9000
         - containerPort: 9090
@@ -28,7 +28,7 @@ spec:
         - name: MINIO_ROOT_USER
           value: "admin"
         - name: MINIO_ROOT_PASSWORD
-          value: "password123"
+          value: "admin123"
   volumeClaimTemplates:
   - metadata:
       name: data
