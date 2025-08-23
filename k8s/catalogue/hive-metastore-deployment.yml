@@ -38,27 +38,20 @@ spec:
       containers:
       - name: hive-metastore
         image: hive-de-infra:1
-        # echo "Iniciando a inicialização do schema do Hive Metastore para PostgreSQL..."
-        # /opt/hive/bin/schematool -dbType postgres -userName ${PG_USERNAME} -passWord ${PG_PASSWORD} -initOrUpgradeSchema
         command: 
-          - "bash"
-          - "-c"
-          - |
-            echo "Inicialização do schema concluída com sucesso. Iniciando o serviço do Hive Metastore..."
-            /opt/hive/bin/hive --service metastore
+          - "/opt/hive/bin/hive"
+          - "--service"
+          - "metastore"
         ports:
         - containerPort: 9083
         env:
-        - name: SERVICE_OPTS
-          value: >-
-            -Djavax.jdo.option.ConnectionUserName=admin
-            -Djavax.jdo.option.ConnectionPassword=admin
-            -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres.database.svc.cluster.local:5432/metastore
-            -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
         - name: HADOOP_OPTS
           value: >-
+            -Djavax.jdo.option.ConnectionUserName=$(PG_USERNAME)
+            -Djavax.jdo.option.ConnectionPassword=$(PG_USERNAME)
             -Dfs.s3a.access.key=$(MINIO_ADMIN_ACCESS_KEY)
             -Dfs.s3a.secret.key=$(MINIO_ADMIN_SECRET_KEY)
+
         envFrom:
         - secretRef:
             name: hive-credentials
