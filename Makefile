@@ -19,16 +19,10 @@ up: create pre helm
 destroy:
 	@kind delete clusters kind
 
-passwd:
-	@echo "JENKINS:"
-	@kubectl get secret -n jenkins jenkins -ojson | jq -r '.data."jenkins-admin-password"' | base64 -d
-	@echo ""
-	@echo "GITEA:"
-	@echo "r8sA8CPHD9!bt6d | jenkins: fv#4ChTvoBhtRc"
-	@echo "SONARQUBE:"
-	@echo "krE^NiQvTc@75G"
-	@echo "ARGOCD:"
-	@kubectl get secret -n argocd argocd-initial-admin-secret -ojson | jq -r '.data.password' | base64 -d
+set-namespace:
+	@kubectl config set-context --current --namespace $(n)
+
+# Uso: make set-namespace n=NAMESPACE
 
 k8s/access_db:
 	kubectl port-forward svc/postgres -n database 5433:5432
@@ -42,3 +36,4 @@ k8s/rollout:
 	kubectl apply -f k8s/catalogue/hive-db-secret.yml
 
 	kubectl rollout restart deployment hive-metastore -n catalogue
+

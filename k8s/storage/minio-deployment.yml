@@ -24,11 +24,9 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /data
-        env:
-        - name: MINIO_ROOT_USER
-          value: "admin"
-        - name: MINIO_ROOT_PASSWORD
-          value: "admin123"
+        envFrom:
+        - secretRef:
+            name: minio-credentials
   volumeClaimTemplates:
   - metadata:
       name: data
