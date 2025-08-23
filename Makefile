@@ -39,6 +39,6 @@ k8s/access_storage:
 k8s/rollout:
 	kubectl apply -f k8s/catalogue/hive-metastore-deployment.yml
 	kubectl apply -f k8s/catalogue/hive-configmap.yml
-	kubectl apply -f k8s/secrets/hive-db-secret.yml
+	kubectl apply -f k8s/catalogue/hive-db-secret.yml
 
 	kubectl rollout restart deployment hive-metastore -n catalogue
