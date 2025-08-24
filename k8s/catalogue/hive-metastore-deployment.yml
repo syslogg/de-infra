@@ -35,6 +35,25 @@ spec:
         envFrom:
         - secretRef:
             name: hive-credentials
+      - name: render-hive-config
+        image: alpine:3.18
+        command:
+          - "/bin/sh"
+          - "-c"
+          - |
+            apk add --no-cache gettext
+            cp /configmap-hive-conf/* /hive-conf/
+            envsubst < /hive-conf/core-site.xml > /hive-conf/core-site.xml.tmp && mv /hive-conf/core-site.xml.tmp /hive-conf/core-site.xml
+            envsubst < /hive-conf/hive-site.xml > /hive-conf/hive-site.xml.tmp && mv /hive-conf/hive-site.xml.tmp /hive-conf/hive-site.xml
+        envFrom:
+        - secretRef:
+            name: hive-credentials
+        volumeMounts:
+        - name: hive-config
+          mountPath: /hive-conf
+        - name: hive-configmap
+          mountPath: /configmap-hive-conf
+          readOnly: true
       containers:
       - name: hive-metastore
         image: hive-de-infra:1
@@ -51,15 +70,25 @@ spec:
             -Djavax.jdo.option.ConnectionPassword=$(PG_PASSWORD)
             -Dfs.s3a.access.key=$(MINIO_ADMIN_ACCESS_KEY)
             -Dfs.s3a.secret.key=$(MINIO_ADMIN_SECRET_KEY)
-
+        - name: HIVE_OPTS
+          value: >-
+            -Djavax.jdo.option.ConnectionUserName=$(PG_USERNAME)
+            -Djavax.jdo.option.ConnectionPassword=$(PG_PASSWORD)
+            -Dfs.s3a.access.key=$(MINIO_ADMIN_ACCESS_KEY)
+            -Dfs.s3a.secret.key=$(MINIO_ADMIN_SECRET_KEY)
         envFrom:
         - secretRef:
             name: hive-credentials
         volumeMounts:
         - name: hive-config
           mountPath: /opt/hive/conf
+        - name: hive-configmap
+          mountPath: /configmap-hive-conf
+          readOnly: true
 
       volumes:
       - name: hive-config
+        emptyDir: {}
+      - name: hive-configmap
         configMap:
           name: hive-config

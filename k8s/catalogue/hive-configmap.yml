@@ -14,11 +14,11 @@ data:
       </property>
       <property>
         <name>fs.s3a.access.key</name>
-        <value>admin</value>
+        <value>${MINIO_ADMIN_ACCESS_KEY}</value>
       </property>
       <property>
         <name>fs.s3a.secret.key</name>
-        <value>admin123</value>
+        <value>${MINIO_ADMIN_SECRET_KEY}</value>
       </property>
       <property>
         <name>fs.s3a.path.style.access</name>
@@ -56,11 +56,11 @@ data:
       </property>
       <property>
         <name>fs.s3a.access.key</name>
-        <value>admin</value>
+        <value>${MINIO_ADMIN_ACCESS_KEY}</value>
       </property>
       <property>
         <name>fs.s3a.secret.key</name>
-        <value>admin123</value>
+        <value>${MINIO_ADMIN_SECRET_KEY}</value>
       </property>
       <property>
         <name>fs.s3a.path.style.access</name>
