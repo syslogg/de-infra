@@ -39,3 +39,8 @@ k8s/rollout:
 	kubectl rollout restart deployment trino-coordinator -n query-engine
 	kubectl rollout restart deployment trino-worker -n query-engine
 
+k8s/rollout_catalogue:
+	kubectl apply -f k8s/catalogue/
+
+	kubectl rollout restart deployment hive-metastore -n catalogue
+
