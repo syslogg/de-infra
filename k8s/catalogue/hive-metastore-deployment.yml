@@ -48,7 +48,7 @@ spec:
         - name: HADOOP_OPTS
           value: >-
             -Djavax.jdo.option.ConnectionUserName=$(PG_USERNAME)
-            -Djavax.jdo.option.ConnectionPassword=$(PG_USERNAME)
+            -Djavax.jdo.option.ConnectionPassword=$(PG_PASSWORD)
             -Dfs.s3a.access.key=$(MINIO_ADMIN_ACCESS_KEY)
             -Dfs.s3a.secret.key=$(MINIO_ADMIN_SECRET_KEY)
 
