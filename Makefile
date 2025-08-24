@@ -28,12 +28,14 @@ k8s/access_db:
 	kubectl port-forward svc/postgres -n database 5433:5432
 
 k8s/access_storage:
-	kubectl port-forward svc/minio -n storage 9000:9000
+	kubectl port-forward svc/minio -n storage 9000:9000 9090:9090
+
+k8s/access_trino:
+	kubectl port-forward svc/trino -n query-engine 8080:8080
 
 k8s/rollout:
-	kubectl apply -f k8s/catalogue/hive-metastore-deployment.yml
-	kubectl apply -f k8s/catalogue/hive-configmap.yml
-	kubectl apply -f k8s/catalogue/hive-db-secret.yml
+	kubectl apply -f k8s/query-engine/
 
-	kubectl rollout restart deployment hive-metastore -n catalogue
+	kubectl rollout restart deployment trino-coordinator -n query-engine
+	kubectl rollout restart deployment trino-worker -n query-engine
 

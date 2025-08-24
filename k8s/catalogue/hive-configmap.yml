@@ -73,7 +73,7 @@ data:
       
       <property>
         <name>hive.metastore.uris</name>
-        <value>thrift://hive-metastore.metastore.svc.cluster.local:9083</value>
+        <value>thrift://hive-metastore.catalogue.svc.cluster.local:9083</value>
       </property>
       
       <!-- Schema Validation -->

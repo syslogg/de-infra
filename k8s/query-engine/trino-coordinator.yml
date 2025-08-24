@@ -15,13 +15,55 @@ spec:
     spec:
       containers:
       - name: trino-coordinator
-        image: trinodb/trino:latest
+        image: trinodb/trino:475
+        envFrom:
+        - secretRef:
+            name: trino-credentials
         ports:
         - containerPort: 8080
         volumeMounts:
         - mountPath: /etc/trino
           name: trino-config
+        - mountPath: /etc/trino/catalog
+          name: trino-catalogs
+
+      # Sincronização de catálogos
+      - name: catalogue-sync
+        image: minio/mc:latest
+        env:
+        - name: MINIO_SERVER_URL
+          value: "http://minio.storage.svc.cluster.local:9000"
+        - name: MINIO_ACCESS_KEY
+          value: "admin"
+        - name: MINIO_SECRET_KEY
+          value: "admin123"
+
+        - name: BUCKET_NAME
+          value: "general-controller"
+
+        - name: PATH_TO_CATALOGS
+          value: "catalogs"
+
+        command: 
+          - "bash"
+          - "-c"
+          - |
+            echo "Configurando acesso ao MinIO..."
+            mc alias set minio ${MINIO_SERVER_URL} ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY}
+            
+            while true; do
+              echo "Sincronizando catálogos do MinIO..."
+              mc mirror minio/${BUCKET_NAME}/${PATH_TO_CATALOGS} /catalogs
+              
+              echo "Sincronização concluída. Aguardando 5 minutos para a próxima..."
+              sleep 60
+            done
+        volumeMounts:
+        - mountPath: /catalogs
+          name: trino-catalogs
       volumes:
       - name: trino-config
         configMap:
           name: trino-coordinator-config
+      - name: trino-catalogs
+        emptyDir: {}

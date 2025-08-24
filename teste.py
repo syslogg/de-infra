@@ -18,7 +18,7 @@ fs = s3fs.S3FileSystem(
 )
 
 # Caminho no bucket (ajuste o bucket e pasta conforme necessário)
-parquet_path = 'bucket-teste/teste_dataset/dados.parquet'
+parquet_path = 'bucket-test/teste_dataset/dados.parquet'
 
 # Salvar no MinIO
 with fs.open(parquet_path, 'wb') as f:
@@ -26,3 +26,17 @@ with fs.open(parquet_path, 'wb') as f:
     pq.write_table(table, f)
 
 print(f"Arquivo Parquet salvo em: s3://{parquet_path}")
+
+# Exemplo de DDL para criar a tabela no Trino baseada no DataFrame
+print("""
+-- DDL para criar a tabela no Trino (ajuste o schema/catalog/bucket se necessário)
+CREATE TABLE hive.bucket_test.teste_dataset (
+    id INTEGER,
+    nome VARCHAR,
+    idade INTEGER
+)
+WITH (
+    external_location = 's3a://bucket-test/teste_dataset/',
+    format = 'PARQUET'
+);
+""")

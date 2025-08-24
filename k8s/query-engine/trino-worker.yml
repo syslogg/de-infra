@@ -4,7 +4,7 @@ metadata:
   name: trino-worker
   namespace: query-engine
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: trino-worker
@@ -13,15 +13,100 @@ spec:
       labels:
         app: trino-worker
     spec:
-      containers:
-      - name: trino-worker
-        image: trinodb/trino:latest
-        ports:
-        - containerPort: 8080
+      initContainers:
+      - name: init-trino-config
+        image: alpine:3.18
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          # Cria os arquivos de configuração no volume
+          echo "node.id=${NODE_ID}" > /etc/trino/node.properties
+          echo "node.environment=production" >> /etc/trino/node.properties
+          echo "node.data-dir=/data/trino" >> /etc/trino/node.properties
+          
+          echo "coordinator=false" > /etc/trino/config.properties
+          echo "node-scheduler.include-coordinator=false" >> /etc/trino/config.properties
+          echo "http-server.http.port=8080" >> /etc/trino/config.properties
+          echo "discovery.uri=http://trino.query-engine.svc.cluster.local:8080" >> /etc/trino/config.properties
+          echo "query.max-memory=2GB" >> /etc/trino/config.properties
+          echo "query.max-memory-per-node=1GB" >> /etc/trino/config.properties
+          echo "catalog.management=dynamic" >> /etc/trino/config.properties
+
+          echo "-server" > /etc/trino/jvm.config
+          echo "-Xmx2G" >> /etc/trino/jvm.config
+          echo "-XX:InitialRAMPercentage=80" >> /etc/trino/jvm.config
+          echo "-XX:MaxRAMPercentage=80" >> /etc/trino/jvm.config
+          echo "-XX:G1HeapRegionSize=32M" >> /etc/trino/jvm.config
+          echo "-XX:+ExplicitGCInvokesConcurrent" >> /etc/trino/jvm.config
+          echo "-XX:+ExitOnOutOfMemoryError" >> /etc/trino/jvm.config
+          echo "-XX:+UseG1GC" >> /etc/trino/jvm.config
+          echo "-XX:ReservedCodeCacheSize=256M" >> /etc/trino/jvm.config
+          echo "-XX:PerMethodRecompilationCutoff=10000" >> /etc/trino/jvm.config
+          echo "-XX:PerBytecodeRecompilationCutoff=10000" >> /etc/trino/jvm.config
+          echo "-Djdk.attach.allowAttachSelf=true" >> /etc/trino/jvm.config
+          echo "-Djdk.nio.maxCachedBufferSize=2000000" >> /etc/trino/jvm.config
+          echo "-XX:+UnlockDiagnosticVMOptions" >> /etc/trino/jvm.config
+          echo "-XX:G1NumCollectionsKeepPinned=10000000" >> /etc/trino/jvm.config
+
+          echo "com.example=DEBUG" > /etc/trino/log.properties
+
+        env:
+        - name: NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         volumeMounts:
         - mountPath: /etc/trino
-          name: trino-config
+          name: trino-config-writable
+      
+      containers:
+      - name: trino-worker
+        image: trinodb/trino:475
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - secretRef:
+            name: trino-credentials
+        command: ["/usr/lib/trino/bin/run-trino"]
+        volumeMounts:
+        - mountPath: /etc/trino
+          name: trino-config-writable
+        - mountPath: /etc/trino/catalog
+          name: trino-catalogs
+
+      - name: catalogue-sync
+        image: minio/mc:latest
+        envFrom:
+        - secretRef:
+            name: trino-credentials
+        env:
+        - name: MINIO_SERVER_URL
+          value: "http://minio.storage.svc.cluster.local:9000"
+        - name: BUCKET_NAME
+          value: "general-controller"
+        - name: PATH_TO_CATALOGS
+          value: "catalogs"
+        command:
+          - "bash"
+          - "-c"
+          - |
+            echo "Configurando acesso ao MinIO..."
+            mc alias set minio ${MINIO_SERVER_URL} ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY}
+            
+            while true; do
+              echo "Sincronizando catálogos do MinIO..."
+              mc mirror minio/${BUCKET_NAME}/${PATH_TO_CATALOGS} /catalogs
+              
+              echo "Sincronização concluída. Aguardando 5 minutos para a próxima..."
+              sleep 60
+            done
+        volumeMounts:
+        - mountPath: /catalogs
+          name: trino-catalogs
+      
       volumes:
-      - name: trino-config
-        configMap:
-          name: trino-worker-config
+      - name: trino-config-writable
+        emptyDir: {}
+      - name: trino-catalogs
+        emptyDir: {}
