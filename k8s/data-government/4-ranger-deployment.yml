@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ranger-admin
+  namespace: data-government
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ranger-admin
+  template:
+    metadata:
+      labels:
+        app: ranger-admin
+    spec:
+      containers:
+      - name: ranger-admin
+        image: apache/ranger:2.4.0
+        command: ["/home/ranger/scripts/ranger.sh"]
+        ports:
+        - containerPort: 6080
+        volumeMounts:
+        - name: ranger-admin-config-volume
+          mountPath: /opt/ranger/admin/install.properties
+          subPath: install.properties
+        env:
+        - name: RANGER_DB_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: ranger-admin-config
+              key: RANGER_DB_TYPE
+        - name: RANGER_DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: ranger-admin-config
+              key: DB_HOST
+        - name: RANGER_DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: ranger-admin-config
+              key: DB_ROOT_USER
+        - name: RANGER_DB_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: ranger-admin-config
+              key: DB_ROOT_PASSWORD
+        - name: RANGER_SOLR_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ranger-admin-config
+              key: XAAUDIT_SOLR_URL
+      volumes:
+      - name: ranger-admin-config-volume
+        configMap:
+          name: ranger-admin-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ranger-admin
+  namespace: data-government
+spec:
+  selector:
+    app: ranger-admin
+  ports:
+  - protocol: TCP
+    port: 6080
+    targetPort: 6080
+  type: LoadBalancer

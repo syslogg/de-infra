@@ -33,6 +33,9 @@ k8s/access_storage:
 k8s/access_trino:
 	kubectl port-forward svc/trino -n query-engine 8080:8080
 
+k8s/access_ranger:
+	kubectl port-forward svc/ranger-admin -n query-engine 6080:6080
+
 k8s/rollout:
 	kubectl apply -f k8s/query-engine/
 
