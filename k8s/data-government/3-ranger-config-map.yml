@@ -8,7 +8,7 @@ data:
   DB_HOST: "postgres.database.svc.cluster.local"
   DB_ROOT_USER: "admin"
   DB_ROOT_PASSWORD: "admin"
-  XAAUDIT_SOLR_URL: "http://ranger-solr:8983/solr/ranger_audits"
+  XAAUDIT_SOLR_URL: "http://ranger-solr.data-government.svc.cluster.local:8983/solr/ranger_audits"
 
   install.properties: |
     #

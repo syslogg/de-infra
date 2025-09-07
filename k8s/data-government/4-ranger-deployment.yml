@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: ranger-admin
-        image: apache/ranger:2.4.0
+        image: apache/ranger:2.5.0
         command: ["/home/ranger/scripts/ranger.sh"]
         ports:
         - containerPort: 6080

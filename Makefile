@@ -47,3 +47,8 @@ k8s/rollout_catalogue:
 
 	kubectl rollout restart deployment hive-metastore -n catalogue
 
+k8s/rollout_ranger:
+	kubectl apply -f k8s/data-government/
+
+	kubectl rollout restart deployment ranger-admin -n data-government
+

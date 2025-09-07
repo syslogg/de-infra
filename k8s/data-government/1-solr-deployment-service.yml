@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: ranger-solr
-        image: apache/ranger-solr:2.4.0
+        image: apache/ranger-solr:2.5.0
         ports:
         - containerPort: 8983
         volumeMounts:
