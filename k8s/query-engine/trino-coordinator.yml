@@ -26,6 +26,10 @@ spec:
           name: trino-config
         - mountPath: /etc/trino/catalog
           name: trino-catalogs
+          
+        - mountPath: /etc/access-control.properties
+          name: trino-access-config
+          subPath: access-control.properties
 
       # Sincronização de catálogos
       - name: catalogue-sync
@@ -63,6 +67,9 @@ spec:
           name: trino-catalogs
       volumes:
       - name: trino-config
+        configMap:
+          name: trino-coordinator-config
+      - name: trino-access-config
         configMap:
           name: trino-coordinator-config
       - name: trino-catalogs

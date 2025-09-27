@@ -4,6 +4,9 @@ metadata:
   name: trino-coordinator-config
   namespace: query-engine
 data:
+  access-control.properties: |
+    access-control.name=ranger
+
   # Configuração Hadoop / S3
   config.properties: |
     coordinator=true
