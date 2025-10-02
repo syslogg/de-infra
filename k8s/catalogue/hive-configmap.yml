@@ -43,7 +43,7 @@ data:
       <!-- Database Configuration -->
       <property>
         <name>javax.jdo.option.ConnectionURL</name>
-        <value>jdbc:postgresql://postgres.database.svc.cluster.local:5432/metastore</value>
+        <value>jdbc:postgresql://hive-metastore-db:5432/hms</value>
       </property>
       <property>
         <name>javax.jdo.option.ConnectionDriverName</name>

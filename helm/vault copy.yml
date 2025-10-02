@@ -1,0 +1,31 @@
+    server:
+      # ... other server configurations ...
+      affinity: null
+      standalone:
+        enabled: false # GCS backend requires HA mode for production
+      ha:
+        enabled: true
+        replicas: 3 # Or desired number of replicas
+      extraVolumes:
+        - type: secret
+          name: vault-gcs-credentials
+          mountPath: /etc/vault/gcp-creds
+          secret:
+            secretName: vault-gcs-credentials
+            items:
+              - key: credentials.json
+                path: credentials.json
+      extraEnvironmentVars:
+        GOOGLE_APPLICATION_CREDENTIALS: /etc/vault/gcp-creds/credentials.json
+        VAULT_ADDR: "http://$(POD_IP):8200"
+      vault:
+        config: |
+          storage "gcs" {
+            bucket     = "us-east-1-syslogg-backups"
+            ha_enabled = "true"
+          }
+          listener "tcp" {
+            address = "[::]:8200"
+            tls_disable = 1 # Or configure TLS
+          }
+          # ... other Vault configurations ...

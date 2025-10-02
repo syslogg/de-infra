@@ -1,0 +1,42 @@
+# Estrutura CORRETA do values.yaml para o chart oficial do Vault
+
+server:
+  image:
+    repository: "hashicorp/vault"
+    tag: "1.19.5" # <--- Altere aqui para a versão desejada
+    pullPolicy: "IfNotPresent"
+  ha:
+    enabled: true
+    replicas: 2
+
+    config: |
+      ui = true
+
+      listener "tcp" {
+        address         = "0.0.0.0:8200"
+        cluster_address = "0.0.0.0:8201"
+        tls_disable     = true
+      }
+
+      # Use APENAS um bloco storage
+      storage "gcs" {
+        bucket     = "us-east-1-syslogg-backups"
+        ha_enabled = "true"
+      }
+
+      disable_mlock = true
+      service_registration "kubernetes" {}
+  volumes:
+    - name: vault-gcs-credentials
+      secret:
+        secretName: vault-gcs-credentials
+
+  volumeMounts:
+    - name: vault-gcs-credentials
+      mountPath: /etc/vault/gcp-creds
+      readOnly: true
+  extraEnvironmentVars:
+    GOOGLE_APPLICATION_CREDENTIALS: /etc/vault/gcp-creds/credentials.json
+
+injector:
+  enabled: false

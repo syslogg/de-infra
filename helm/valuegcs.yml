@@ -1,0 +1,38 @@
+# Estrutura CORRETA do values.yaml para o chart oficial do Vault
+
+server:
+  ha:
+    enabled: true
+    replicas: 2
+
+    # Configuração combinada de storage e HA
+    config: |
+      ui = true
+
+      listener "tcp" {
+        address         = "0.0.0.0:8200"
+        cluster_address = "0.0.0.0:8201"
+        tls_disable     = true
+      }
+
+      # Use APENAS um bloco storage
+      storage "gcs" {
+        bucket     = "us-east-1-syslogg-backups"
+        ha_enabled = "true"  # Habilita o modo HA dentro do mesmo bloco
+      }
+
+      disable_mlock = true
+      service_registration "kubernetes" {}
+  volumes:
+    - name: vault-gcs-credentials
+      secret:
+        secretName: vault-gcs-credentials
+  
+  volumeMounts:
+    - name: vault-gcs-credentials
+      mountPath: /etc/vault/gcp-creds
+      readOnly: true
+  extraEnvironmentVars:
+    # Garanta que o caminho aqui esteja correto
+    GOOGLE_APPLICATION_CREDENTIALS: /etc/vault/gcp-creds/credentials.json
+    VAULT_ADDR: "http://$(POD_IP):8200"
