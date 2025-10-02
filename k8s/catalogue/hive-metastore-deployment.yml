@@ -15,7 +15,7 @@ spec:
     spec:
       initContainers:
       - name: init-hive-schema
-        image: hive-de-infra:1
+        image: syslogg/my-catalogue-hms:latest
         command:
           - "bash"
           - "-c"
@@ -23,12 +23,12 @@ spec:
             echo 'Aguardando PostgreSQL...'
             sleep 15
             echo "Usando usuario=${PG_USERNAME}"
-            echo "URL=jdbc:postgresql://postgres.database.svc.cluster.local:5432/metastore"
+            echo "URL=jdbc:postgresql://hive-metastore-db:5432/hms"
             if ! /opt/hive/bin/schematool -dbType postgres -userName ${PG_USERNAME} -passWord ${PG_PASSWORD} \
-                -url jdbc:postgresql://postgres.database.svc.cluster.local:5432/metastore -driver org.postgresql.Driver -info; then
+                -url jdbc:postgresql://hive-metastore-db:5432/hms -driver org.postgresql.Driver -info; then
               echo 'Inicializando schema do Hive Metastore...'
               /opt/hive/bin/schematool -initSchema -dbType postgres -userName ${PG_USERNAME} -passWord ${PG_PASSWORD} \
-                -url jdbc:postgresql://postgres.database.svc.cluster.local:5432/metastore -driver org.postgresql.Driver --verbose
+                -url jdbc:postgresql://hive-metastore-db:5432/hms -driver org.postgresql.Driver --verbose
             else
               echo 'Schema do Hive Metastore já existe'
             fi
@@ -56,7 +56,7 @@ spec:
           readOnly: true
       containers:
       - name: hive-metastore
-        image: hive-de-infra:1
+        image: syslogg/my-catalogue-hms:latest
         command: 
           - "/opt/hive/bin/hive"
           - "--service"

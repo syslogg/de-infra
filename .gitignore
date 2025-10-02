@@ -1,1 +1,2 @@
-.volumes
+vault-backups-*.json
+secrets/

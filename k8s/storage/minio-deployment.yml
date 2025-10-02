@@ -32,6 +32,7 @@ spec:
       name: data
     spec:
       accessModes: [ "ReadWriteOnce" ]
+      storageClassName: nfs-client
       resources:
         requests:
           storage: 5Gi
